@@ -31,7 +31,7 @@ class TinyKerberosAuth(resource.Resource):
 
         print('Sleep Time: {}'.format(time.time() - start1))
 
-        self.content = "Some response"
+        self.content = b"Some response"
 
         return aiocoap.Message(payload=self.content)
 

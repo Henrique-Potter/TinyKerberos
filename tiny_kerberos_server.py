@@ -25,18 +25,18 @@ def main():
     # Resource tree creation
     root = resource.Site()
     root.add_resource(('.well-known', 'core'), resource.WKCResource(root.get_resources_as_linkheader))
-    #root.add_resource(('peyes',), TinyKerberosAuth())
+    root.add_resource(('auth',), TinyKerberosAuth())
 
     # root.add_resource(('other', 'block'), BlockResource())
     # root.add_resource(('other', 'separate'), SeparateLargeResource())
 
     #server_address = args.ip
-    server_address = 'fe80::785b:a177:34c0:d626%11'
+    server_address = 'fe80::aee5:20ed:4665:ca9c'
 
     try:
         print("Server Started at {}".format(server_address))
-        #asyncio.Task(aiocoap.Context.create_server_context(root))
-        asyncio.Task(aiocoap.Context.create_server_context(root, bind=(server_address, 5683)))
+        asyncio.Task(aiocoap.Context.create_server_context(root))
+        #asyncio.Task(aiocoap.Context.create_server_context(root, bind=(server_address, 5683)))
         asyncio.get_event_loop().run_forever()
 
     except KeyboardInterrupt:
