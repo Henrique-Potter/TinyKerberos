@@ -5,6 +5,12 @@ import json
 
 from domain.message import Message as msg
 import utills
+import time
+import pandas as pd
+import numpy as np
+from pathlib import Path
+
+current_dir = Path(__file__).parent.absolute()
 
 host = "192.168.0.141"
 host_note = "192.168.0.177"
@@ -41,14 +47,14 @@ async def register_device_put_call():
     device_id = Fernet.generate_key()
     device_owner_key = Fernet.generate_key()
 
-    owner_encryption_suite = Fernet(owner_key)
-    secure_device_id = owner_encryption_suite.encrypt(device_id)
+    owner_encryptor = Fernet(owner_key)
+    secure_device_id = owner_encryptor.encrypt(device_id)
 
-    payloa_dict = {}
-    payloa_dict["owner_uuid"] = 2
-    payloa_dict["device_id"] = secure_device_id
+    payload_dict = {}
+    payload_dict["owner_uuid"] = 2
+    payload_dict["device_id"] = secure_device_id
 
-    payload = json.dumps(payloa_dict, cls=utills.BytesDump).encode()
+    payload = json.dumps(payload_dict, cls=utills.BytesDump).encode()
 
     request = Message(code=PUT, payload=payload)
     request.set_request_uri(uri='coap://192.168.0.134:5683/register')
@@ -70,6 +76,7 @@ async def client_auth_put_call():
 
     password = b"somesecretpassword"
 
+    # Simple proof of secret key ownership
     token = utills.encrypt(password, password)
 
     payload_dict = {}
@@ -97,7 +104,7 @@ async def client_auth_put_call():
         # Loading Json as Python object
         message = msg(payload)
 
-        # Retrieving session and access ticket keys
+        # Retrieving session key and access ticket
         session_key = message.session_key
         access_ticket = message.access_ticket
 
@@ -115,6 +122,9 @@ def generate_device_id_and_key():
 if __name__ == "__main__":
 
     #asyncio.get_event_loop().run_until_complete(get_call())
-    #asyncio.get_event_loop().run_until_complete(register_device_put_call())
-    asyncio.get_event_loop().run_until_complete(client_auth_put_call())
+    asyncio.get_event_loop().run_until_complete(register_device_put_call())
+    #asyncio.get_event_loop().run_until_complete(client_auth_put_call())
+
+
+
 

@@ -21,7 +21,7 @@ logging.getLogger("coap-server").setLevel(logging.DEBUG)
 def main():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--ip", type=str, required=True)
+    parser.add_argument("--ip", type=str, required=False)
     args = parser.parse_args()
 
     # Resource tree creation
@@ -30,6 +30,7 @@ def main():
     root.add_resource(('register',), RegisterDeviceResource())
     root.add_resource(('auth_user',), AuthUserResource())
 
+    # Not being used
     server_address = args.ip
 
     try:

@@ -23,6 +23,7 @@ device_key = b'A9KQBzD07VToOFSSkpnXI0TuYalsTtSZePPf0cq1R6c='
 # Root RAD key to generate authentication tickets
 rad_key = b'A9KQBzD07VToOFSSkpnXI0TuYalsTtSZePPf0cq1R8c='
 
+
 class AuthUserResource(resource.Resource):
 
     def __init__(self):
@@ -62,17 +63,14 @@ class AuthUserResource(resource.Resource):
             # If passwords match
             if token_content == user_pass:
 
-                access_ticket_raw['timeStamp'] = time.time()
-                access_ticket_raw['session_id'] = Fernet.generate_key()
+                session_key = Fernet.generate_key()
 
-                rad_enc_suite = Fernet(rad_key)
+                # Internal ticket encrypted with RAD key
+                access_ticket_enc = utills.create_access_ticket(access_ticket_raw, session_key)
 
-                access_ticket_enc = rad_enc_suite.encrypt(json.dumps(access_ticket_raw, cls=BytesDump).encode())
-
+                # External ticket encrypted with clients password
                 response_dict['access_ticket'] = access_ticket_enc
-
-                response_dict['session_key'] = Fernet.generate_key()
-
+                response_dict['session_key'] = session_key
                 response_payload = utills.encrypt(user_pass, json.dumps(response_dict, cls=BytesDump).encode())
 
             else:
@@ -82,4 +80,6 @@ class AuthUserResource(resource.Resource):
             print(e)
 
         return aiocoap.Message(code=aiocoap.CHANGED, payload=response_payload)
+
+
 
