@@ -5,6 +5,7 @@ import json
 
 from domain.message import Message as msg
 import utills
+from utills.utills import BytesDump
 import time
 import pandas as pd
 import numpy as np
@@ -28,6 +29,8 @@ async def get_call():
     protocol = await Context.create_client_context()
 
     request = Message(code=GET)
+
+    #request.set_request_uri(uri='coap://192.168.0.177:5683/auth')
     request.set_request_uri(uri='coap://[::1]:5683/auth')
 
     try:
@@ -39,6 +42,7 @@ async def get_call():
         print(e)
     else:
         print('Result: %s\n%r' % (response.code, response.payload))
+
 
 # Secure version of device registration method
 async def sec_register_device_put_call():
@@ -56,7 +60,7 @@ async def sec_register_device_put_call():
     payload_dict["owner_uuid"] = 2
     payload_dict["device_id"] = secure_device_id
 
-    payload = json.dumps(payload_dict, cls=utills.BytesDump).encode()
+    payload = json.dumps(payload_dict, cls=BytesDump).encode()
 
     request = Message(code=PUT, payload=payload)
     request.set_request_uri(uri='coap://192.168.0.134:5683/sec_register')
@@ -86,7 +90,7 @@ async def register_device_put_call():
     payload_dict["owner_uuid"] = 2
     payload_dict["device_id"] = device_id
 
-    payload = json.dumps(payload_dict, cls=utills.BytesDump).encode()
+    payload = json.dumps(payload_dict, cls=BytesDump).encode()
 
     request = Message(code=PUT, payload=payload)
     request.set_request_uri(uri='coap://192.168.0.134:5683/register')
@@ -110,13 +114,13 @@ async def sec_client_auth_put_call():
     password = b"somesecretpassword"
 
     # Simple proof of secret key ownership
-    token = utills.encrypt(password, password)
+    token = utills.encrypt_with_password(password, password)
 
     payload_dict = {}
     payload_dict["user_id"] = 10
     payload_dict["token"] = token
 
-    payload = json.dumps(payload_dict, cls=utills.BytesDump).encode()
+    payload = json.dumps(payload_dict, cls=BytesDump).encode()
 
     request = Message(code=PUT, payload=payload)
     request.set_request_uri(uri='coap://192.168.0.134:5683/sec_auth_user')
@@ -132,7 +136,7 @@ async def sec_client_auth_put_call():
         payload_enc = response.payload
 
         # Decrypting with Fernet custom password-based key
-        payload = utills.decrypt(password, payload_enc)
+        payload = utills.decrypt_with_password(password, payload_enc)
 
         # Loading Json as Python object
         message = msg(payload)
@@ -141,7 +145,85 @@ async def sec_client_auth_put_call():
         session_key = message.session_key
         access_ticket = message.access_ticket
 
-        print('Result: %s\n%r' % (response.code, response.payload))
+        return session_key, access_ticket
+
+
+# Secure version of client authentication method
+async def sec_client_discover_device_put_call(session_key, access_ticket):
+
+    protocol = await Context.create_client_context()
+
+    device_request = {}
+    device_request["device_capability"] = 'temperature'
+    device_request["client_id"] = 10
+
+    enc_json_device_request = utills.encrypt(session_key, json.dumps(device_request, cls=BytesDump).encode())
+
+    request_payload_obj = {}
+    request_payload_obj["device_request"] = enc_json_device_request
+    request_payload_obj["access_ticket"] = access_ticket
+
+    json_payload = json.dumps(request_payload_obj, cls=BytesDump).encode()
+
+    request = Message(code=PUT, payload=json_payload)
+    request.set_request_uri(uri='coap://192.168.0.134:5683/sec_discover')
+
+    try:
+        response = await protocol.request(request).response
+        print(response.remote.hostinfo)
+
+    except Exception as e:
+        print('Failed to fetch resource:')
+        print(e)
+    else:
+        payload_enc = response.payload
+
+        # Decrypting with Fernet custom password-based key
+        payload = utills.decrypt(session_key, payload_enc)
+
+        # Loading Json as Python object
+        message = msg(payload)
+
+        # Retrieving session key and access ticket
+        url = message.url
+        device_session_key = message.device_session_key
+        rad_ticket = message.rad_ticket
+        owner_ticket = message.owner_ticket
+
+        return url, device_session_key, rad_ticket, owner_ticket
+
+
+# Secure version of client authentication method
+async def client_discover_device_put_call():
+
+    protocol = await Context.create_client_context()
+
+    device_request_obj = {}
+    device_request_obj["device_capability"] = 'temperature'
+
+    json_payload = json.dumps(device_request_obj, cls=BytesDump).encode()
+
+    request = Message(code=PUT, payload=json_payload)
+    request.set_request_uri(uri='coap://192.168.0.134:5683/discover')
+
+
+    try:
+        response = await protocol.request(request).response
+        print(response.remote.hostinfo)
+
+    except Exception as e:
+        print('Failed to fetch resource:')
+        print(e)
+    else:
+        payload_plain_text = response.payload
+
+        # Loading Json as Python object
+        message_object = msg(payload_plain_text)
+
+        # Retrieving session key and access ticket
+        url = message_object.url
+
+        return url
 
 
 def generate_device_id_and_key():
@@ -154,10 +236,10 @@ def generate_device_id_and_key():
 
 if __name__ == "__main__":
 
-    #asyncio.get_event_loop().run_until_complete(get_call())
-    asyncio.get_event_loop().run_until_complete(sec_register_device_put_call())
-    #asyncio.get_event_loop().run_until_complete(client_auth_put_call())
+    # session_key, access_ticket = asyncio.get_event_loop().run_until_complete(sec_client_auth_put_call())
+    #
+    # asyncio.get_event_loop().run_until_complete(sec_client_discover_device_put_call(session_key, access_ticket))
 
-
+    asyncio.get_event_loop().run_until_complete(client_discover_device_put_call())
 
 

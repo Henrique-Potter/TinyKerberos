@@ -11,12 +11,17 @@ def custom_key(password):
     return base64.urlsafe_b64encode(digest.finalize())
 
 
-def encrypt(password, token):
+def encrypt_with_password(password, token):
     f = Fernet(custom_key(password))
     return f.encrypt(bytes(token))
 
 
-def decrypt(password, token):
+def encrypt(key, token):
+    f = Fernet(key)
+    return f.encrypt(bytes(token))
+
+
+def decrypt_with_password(password, token):
     f = Fernet(custom_key(password))
 
     if type(token) == bytes:
@@ -24,3 +29,12 @@ def decrypt(password, token):
     else:
         return f.decrypt(bytes(token, encoding='utf8'))
 
+
+def decrypt(key, token):
+
+    f = Fernet(key)
+
+    if type(token) == bytes:
+        return f.decrypt(token)
+    else:
+        return f.decrypt(bytes(token, encoding='utf8'))

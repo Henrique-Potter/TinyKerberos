@@ -7,9 +7,10 @@ import aiocoap.resource as resource
 import aiocoap
 
 #if platform.uname()[1] == 'raspberrypi':
-from coapresources import SecRegisterDeviceResource
-from coapresources.sec_authenticate_user_res import SecAuthUserResource
-from coapresources.register_device_res import RegisterDeviceResource
+from coapresources import SecRegisterDeviceResource, DiscoverDeviceResource
+from coapresources import SecDiscoverDeviceResource
+from coapresources import SecAuthUserResource
+from coapresources import RegisterDeviceResource
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("coap-server").setLevel(logging.DEBUG)
@@ -27,6 +28,8 @@ def main():
     root.add_resource(('register',), RegisterDeviceResource())
     root.add_resource(('sec_register',), SecRegisterDeviceResource())
     root.add_resource(('sec_auth_user',), SecAuthUserResource())
+    root.add_resource(('sec_discover',), SecDiscoverDeviceResource())
+    root.add_resource(('discover',), DiscoverDeviceResource())
 
     # Not being used
     server_address = args.ip

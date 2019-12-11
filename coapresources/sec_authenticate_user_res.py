@@ -51,7 +51,7 @@ class SecAuthUserResource(resource.Resource):
             user_token = message.token
             user_pass = registered_users.get(user_id)
 
-            token_content = utills.decrypt(user_pass, user_token)
+            token_content = utills.decrypt_with_password(user_pass, user_token)
 
             response_dict = {}
             access_ticket_raw = {}
@@ -63,12 +63,12 @@ class SecAuthUserResource(resource.Resource):
                 session_key = Fernet.generate_key()
 
                 # Internal ticket encrypted with RAD key
-                access_ticket_enc = utills.create_access_ticket(access_ticket_raw, session_key)
+                access_ticket_enc = utills.create_access_ticket(session_key, rad_key, user_id)
 
                 # External ticket encrypted with clients password
                 response_dict['access_ticket'] = access_ticket_enc
                 response_dict['session_key'] = session_key
-                response_payload = utills.encrypt(user_pass, json.dumps(response_dict, cls=BytesDump).encode())
+                response_payload = utills.encrypt_with_password(user_pass, json.dumps(response_dict, cls=BytesDump).encode())
 
             else:
                 response_payload = b"401"
