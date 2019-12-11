@@ -1,6 +1,5 @@
 import aiocoap.resource as resource
 import aiocoap
-from threading import Lock
 import time
 import json
 
@@ -9,8 +8,6 @@ from cryptography.fernet import Fernet
 import utills
 from domain.message import Message
 from utills import BytesDump
-
-peyes_lock = Lock()
 
 
 # Simple Key-Value database of users passwords
@@ -24,7 +21,7 @@ device_key = b'A9KQBzD07VToOFSSkpnXI0TuYalsTtSZePPf0cq1R6c='
 rad_key = b'A9KQBzD07VToOFSSkpnXI0TuYalsTtSZePPf0cq1R8c='
 
 
-class AuthUserResource(resource.Resource):
+class SecAuthUserResource(resource.Resource):
 
     def __init__(self):
         super().__init__()

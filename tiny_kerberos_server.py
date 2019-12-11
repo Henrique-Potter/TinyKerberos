@@ -7,12 +7,9 @@ import aiocoap.resource as resource
 import aiocoap
 
 #if platform.uname()[1] == 'raspberrypi':
-
-#from peyes_c_resource import PeyesC
-from authenticate_user_res import AuthUserResource
-from register_device_res import RegisterDeviceResource
-from tiny_kerberos_res import TinyKerberosAuth
-
+from coapresources import SecRegisterDeviceResource
+from coapresources.sec_authenticate_user_res import SecAuthUserResource
+from coapresources.register_device_res import RegisterDeviceResource
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("coap-server").setLevel(logging.DEBUG)
@@ -28,7 +25,8 @@ def main():
     root = resource.Site()
     root.add_resource(('.well-known', 'core'), resource.WKCResource(root.get_resources_as_linkheader))
     root.add_resource(('register',), RegisterDeviceResource())
-    root.add_resource(('auth_user',), AuthUserResource())
+    root.add_resource(('sec_register',), SecRegisterDeviceResource())
+    root.add_resource(('sec_auth_user',), SecAuthUserResource())
 
     # Not being used
     server_address = args.ip

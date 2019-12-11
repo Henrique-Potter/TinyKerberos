@@ -7,8 +7,6 @@ from cryptography.fernet import Fernet
 
 from domain.message import Message
 
-peyes_lock = Lock()
-
 
 # Simple Key-Value database of owner keys
 registered_owners = {2: b'A9KQBzD07VToOFSSkpnXI0TuYalsTtSZePPf0cq1R5c='}
@@ -44,19 +42,11 @@ class RegisterDeviceResource(resource.Resource):
 
             # Dynamic attribute generated from json dump
             owner_id = message.owner_uuid
+            device_id = message.device_id
             owner_key = registered_owners.get(owner_id)
 
-            owner_encryption_suite = Fernet(owner_key)
-
-            # Dynamic attribute generated from json dump
-            secure_device_id = message.device_id.encode()
-            plain_text_device_id = owner_encryption_suite.decrypt(secure_device_id)
-
-            registered_devices[owner_id] = {plain_text_device_id: b''}
-
-            authentication = True
-
-            if authentication:
+            if owner_key:
+                registered_devices[owner_id] = {device_id: b''}
                 response_payload = b"201"
             else:
                 response_payload = b"401"

@@ -6,6 +6,7 @@ import time
 peyes_lock = Lock()
 
 
+# Simply class for debugging and testing
 class TinyKerberosAuth(resource.Resource):
 
     def __init__(self):
@@ -17,16 +18,14 @@ class TinyKerberosAuth(resource.Resource):
 
         time.sleep(1)
 
-        #self.payload = found_face
-
         print('Sleep Time: {}'.format(time.time() - start1))
 
         self.content = b"Some response"
 
         return aiocoap.Message(payload=self.content)
 
-
     async def render_put(self, request):
+
         print('PUT payload: %s' % request.payload)
         self.set_content(request.payload)
         return aiocoap.Message(code=aiocoap.CHANGED, payload=self.content)
