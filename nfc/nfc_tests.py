@@ -5,6 +5,8 @@ is the most reliable and universally supported.
 After initialization, try waving various 13.56MHz RFID cards over it!
 """
 
+# Henrique -> used in nfc tests. However, there is no practical way of per-to-peer with the current NFC
+
 import board
 import busio
 from digitalio import DigitalInOut

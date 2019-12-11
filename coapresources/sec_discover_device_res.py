@@ -84,7 +84,7 @@ class SecDiscoverDeviceResource(resource.Resource):
                 enc_json_owner_ticket = create_access_ticket(device_session_key, owner_key, client_id)
 
                 request_response_obj = {}
-                request_response_obj['url'] = 'temp'
+                request_response_obj['url'] = 'sec_temp'
                 request_response_obj['device_session_key'] = device_session_key
                 request_response_obj['rad_ticket'] = enc_json_rad_ticket
                 request_response_obj['owner_ticket'] = enc_json_owner_ticket

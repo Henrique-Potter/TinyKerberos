@@ -3,12 +3,9 @@ from aiocoap import *
 from cryptography.fernet import Fernet
 import json
 
-from domain.message import Message as msg
 import utills
+from domain.message import Message as msg
 from utills.utills import BytesDump
-import time
-import pandas as pd
-import numpy as np
 from pathlib import Path
 
 current_dir = Path(__file__).parent.absolute()
@@ -76,7 +73,7 @@ async def sec_register_device_put_call():
         print('Result: %s\n%r' % (response.code, response.payload))
 
 
-# Unsecure version of device registration method
+# Non-secure version of device registration method
 async def register_device_put_call():
 
     protocol = await Context.create_client_context()
@@ -148,7 +145,7 @@ async def sec_client_auth_put_call():
         return session_key, access_ticket
 
 
-# Secure version of client authentication method
+# Secure version of client device discovery method
 async def sec_client_discover_device_put_call(session_key, access_ticket):
 
     protocol = await Context.create_client_context()
@@ -193,7 +190,7 @@ async def sec_client_discover_device_put_call(session_key, access_ticket):
         return url, device_session_key, rad_ticket, owner_ticket
 
 
-# Secure version of client authentication method
+# Non-secure version of client device discovery method
 async def client_discover_device_put_call():
 
     protocol = await Context.create_client_context()
@@ -205,7 +202,6 @@ async def client_discover_device_put_call():
 
     request = Message(code=PUT, payload=json_payload)
     request.set_request_uri(uri='coap://192.168.0.134:5683/discover')
-
 
     try:
         response = await protocol.request(request).response
@@ -226,6 +222,76 @@ async def client_discover_device_put_call():
         return url
 
 
+# Secure version of client device interaction method
+async def sec_client_device_interaction_put_call(url, device_session_key, rad_ticket, owner_ticket):
+
+    protocol = await Context.create_client_context()
+
+    device_data_request = {}
+    device_data_request["capability"] = 'temp'
+    device_data_request["client_id"] = 2
+
+    enc_json_device_request = utills.encrypt(device_session_key, json.dumps(device_data_request, cls=BytesDump).encode())
+
+    request_payload_obj = {}
+    request_payload_obj["rad_ticket"] = rad_ticket
+    request_payload_obj["owner_ticket"] = owner_ticket
+    request_payload_obj["sensor_data_request"] = enc_json_device_request
+
+    json_payload = json.dumps(request_payload_obj, cls=BytesDump).encode()
+
+    request = Message(code=PUT, payload=json_payload)
+    request.set_request_uri(uri='coap://192.168.0.134:5683/{}'.format(url))
+
+    try:
+        response = await protocol.request(request).response
+        print(response.remote.hostinfo)
+
+    except Exception as e:
+        print('Failed to fetch resource:')
+        print(e)
+    else:
+        payload_enc = response.payload
+
+        # Decrypting with Fernet custom password-based key
+        payload = utills.decrypt(device_session_key, payload_enc)
+
+        # Loading Json as Python object
+        message = msg(payload)
+
+        # Retrieving session key and access ticket
+        device_data = message.value
+
+
+# Secure version of client device interaction method
+async def client_device_interaction_put_call(url):
+
+    protocol = await Context.create_client_context()
+
+    device_data_request = {}
+    device_data_request["capability"] = 'temp'
+
+    json_payload = json.dumps(device_data_request, cls=BytesDump).encode()
+
+    request = Message(code=PUT, payload=json_payload)
+    request.set_request_uri(uri='coap://192.168.0.134:5683/{}'.format(url))
+
+    try:
+        response = await protocol.request(request).response
+        print(response.remote.hostinfo)
+
+    except Exception as e:
+        print('Failed to fetch resource:')
+        print(e)
+    else:
+        payload = response.payload
+
+        # Loading Json as Python object
+        message = msg(payload)
+        # Retrieving session key and access ticket
+        device_data = message.value
+
+
 def generate_device_id_and_key():
 
     device_id = Fernet.generate_key()
@@ -236,10 +302,11 @@ def generate_device_id_and_key():
 
 if __name__ == "__main__":
 
-    # session_key, access_ticket = asyncio.get_event_loop().run_until_complete(sec_client_auth_put_call())
-    #
-    # asyncio.get_event_loop().run_until_complete(sec_client_discover_device_put_call(session_key, access_ticket))
+    #    session_key, access_ticket = asyncio.get_event_loop().run_until_complete(sec_client_auth_put_call())
+    #    url, device_session_key, rad_ticket, owner_ticket = asyncio.get_event_loop().run_until_complete(sec_client_discover_device_put_call(session_key, access_ticket))
+    #    asyncio.get_event_loop().run_until_complete(sec_client_device_interaction_put_call(url, device_session_key, rad_ticket, owner_ticket))
 
-    asyncio.get_event_loop().run_until_complete(client_discover_device_put_call())
+    url = asyncio.get_event_loop().run_until_complete(client_discover_device_put_call())
 
+    asyncio.get_event_loop().run_until_complete(client_device_interaction_put_call(url))
 

@@ -7,7 +7,9 @@ import aiocoap.resource as resource
 import aiocoap
 
 #if platform.uname()[1] == 'raspberrypi':
-from coapresources import SecRegisterDeviceResource, DiscoverDeviceResource
+from coapresources import SecRegisterDeviceResource, DeviceInteractionResource
+from coapresources import DiscoverDeviceResource
+from coapresources import SecDeviceInteractionResource
 from coapresources import SecDiscoverDeviceResource
 from coapresources import SecAuthUserResource
 from coapresources import RegisterDeviceResource
@@ -30,6 +32,9 @@ def main():
     root.add_resource(('sec_auth_user',), SecAuthUserResource())
     root.add_resource(('sec_discover',), SecDiscoverDeviceResource())
     root.add_resource(('discover',), DiscoverDeviceResource())
+    root.add_resource(('sec_temp',), SecDeviceInteractionResource())
+    root.add_resource(('temp',), DeviceInteractionResource())
+
 
     # Not being used
     server_address = args.ip
