@@ -33,7 +33,7 @@ async def get_call():
     try:
         response = await protocol.request(request).response
         print(response.remote.hostinfo)
-
+        protocol.shutdown()
     except Exception as e:
         print('Failed to fetch resource:')
         print(e)
@@ -65,7 +65,7 @@ async def sec_register_device_put_call():
     try:
         response = await protocol.request(request).response
         print(response.remote.hostinfo)
-
+        protocol.shutdown()
     except Exception as e:
         print('Failed to fetch resource:')
         print(e)
@@ -95,7 +95,7 @@ async def register_device_put_call():
     try:
         response = await protocol.request(request).response
         print(response.remote.hostinfo)
-
+        protocol.shutdown()
     except Exception as e:
         print('Failed to fetch resource:')
         print(e)
@@ -125,7 +125,7 @@ async def sec_client_auth_put_call():
     try:
         response = await protocol.request(request).response
         print(response.remote.hostinfo)
-
+        protocol.shutdown()
     except Exception as e:
         print('Failed to fetch resource:')
         print(e)
@@ -168,7 +168,7 @@ async def sec_client_discover_device_put_call(session_key, access_ticket):
     try:
         response = await protocol.request(request).response
         print(response.remote.hostinfo)
-
+        protocol.shutdown()
     except Exception as e:
         print('Failed to fetch resource:')
         print(e)
@@ -206,7 +206,7 @@ async def client_discover_device_put_call():
     try:
         response = await protocol.request(request).response
         print(response.remote.hostinfo)
-
+        protocol.shutdown()
     except Exception as e:
         print('Failed to fetch resource:')
         print(e)
@@ -246,7 +246,7 @@ async def sec_client_device_interaction_put_call(url, device_session_key, rad_ti
     try:
         response = await protocol.request(request).response
         print(response.remote.hostinfo)
-
+        protocol.shutdown()
     except Exception as e:
         print('Failed to fetch resource:')
         print(e)
@@ -279,7 +279,7 @@ async def client_device_interaction_put_call(url):
     try:
         response = await protocol.request(request).response
         print(response.remote.hostinfo)
-
+        protocol.shutdown()
     except Exception as e:
         print('Failed to fetch resource:')
         print(e)
