@@ -13,7 +13,7 @@ current_dir = Path(__file__).parent.absolute()
 
 def benchmark_protocol(iterations, stop_between):
     benchmark_file_name = 'protocol_benchmark'
-    headers = ['SecAuthenticate', 'SecDiscover', 'SecInteraction', 'NonSecDiscover', 'NonSecIntraction', 'SecRegisterDevice', 'NonSecRegisterDevice']
+    headers = ['SecAuthenticate', 'SecDiscover', 'SecInteraction', 'NonSecDiscover', 'NonSecInteraction', 'SecRegisterDevice', 'NonSecRegisterDevice']
     measured_time = np.zeros([iterations, 7])
 
     if stop_between:
